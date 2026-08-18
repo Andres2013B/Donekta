@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; padding: 0; margin: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  /* Tipografía nativa de Apple: se ve perfecta en iPhone y Mac */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* CRÍTICO PARA IPHONE: inputs con menos de 16px hacen que iOS haga zoom automático al tocarlos.
+   Esto lo evita en TODAS las páginas de una vez. */
+input, textarea, select {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Botones con área de toque cómoda para dedos (Apple recomienda mínimo 44px) */
+button {
+  min-height: 44px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Scroll suave con inercia en iPhone */
+.scroll-momentum { -webkit-overflow-scrolling: touch; }
+
+/* Respeta la barra de inicio del iPhone (notch y home indicator) */
+.safe-bottom { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+.safe-top { padding-top: env(safe-area-inset-top); }
+
+/* Evita que el texto se agrande solo al rotar el iPhone */
+html { -webkit-text-size-adjust: 100%; }
