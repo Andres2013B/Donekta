@@ -9,12 +9,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (!donorEmail) return res.status(400).json({ error: 'Email requerido' })
 
-  const name = donorName || 'Donador'
+  const name = donorName || 'Anónimo'
   const freqText = frequency && frequency !== 'única' ? ` (donación ${frequency})` : ''
   const institution = communityName || 'una comunidad'
 
-  // Si se dedicó la donación a alguien con correo, el certificado llega a esa persona.
-  // Si no, llega al correo de la cuenta que donó.
+  const communityAmount = (Number(amount) * 0.944).toFixed(2)
+  const stripeAmount = (Number(amount) * 0.036).toFixed(2)
+  const donektaAmount = (Number(amount) * 0.02).toFixed(2)
+
   const recipientEmail = (dedicateEmail && dedicateEmail.trim()) ? dedicateEmail.trim() : donorEmail
   const certificateName = (dedicateTo && dedicateTo.trim()) ? dedicateTo.trim() : name
 
@@ -27,9 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const buf = Buffer.from(await certRes.arrayBuffer())
       attachments = [{ filename: 'certificado-donekta.png', content: buf }]
     }
-  } catch (_) {
-    // Si falla la generación del certificado, igual enviamos el correo de confirmación.
-  }
+  } catch (_) {}
 
   try {
     await resend.emails.send({
@@ -44,7 +44,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <div style="background:#EDFBF4;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
             <div style="font-size:40px;margin-bottom:12px;">💚</div>
             <p style="color:#121826;font-size:18px;font-weight:700;margin-bottom:8px;">${certificateName}, ¡muchas gracias por donar en Donekta!</p>
-            <p style="color:#6F737D;font-size:14px;line-height:1.6;">Tu donación de <strong style="color:#55B584;">$${Number(amount).toLocaleString()} MXN</strong>${freqText} a <strong>${institution}</strong> ya está en camino para generar un cambio real.</p>
+            <p style="color:#6F737D;font-size:14px;line-height:1.6;">Tu donación de <strong style="color:#55B584;">$${Number(amount).toLocaleString('es-MX')} MXN</strong>${freqText} a <strong>${institution}</strong> ya está en camino.</p>
+          </div>
+
+          <p style="color:#374151;font-size:14px;font-weight:600;margin-bottom:12px;">Distribución de tu donación:</p>
+          <div style="border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;">
+              <span style="font-size:13px;color:#374151;">💚 Para ${institution} <span style="color:#9ca3af;">(94.4%)</span></span>
+              <strong style="color:#55B584;">$${Number(communityAmount).toLocaleString('es-MX')} MXN</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
+              <span style="font-size:13px;color:#374151;">💳 Stripe <span style="color:#9ca3af;">(3.6%)</span></span>
+              <span style="color:#6b7280;">$${Number(stripeAmount).toLocaleString('es-MX')} MXN</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#f9fafb;">
+              <span style="font-size:13px;color:#374151;">🌱 Donekta <span style="color:#9ca3af;">(2%)</span></span>
+              <span style="color:#6b7280;">$${Number(donektaAmount).toLocaleString('es-MX')} MXN</span>
+            </div>
           </div>
 
           <p style="color:#6F737D;font-size:13px;text-align:center;margin-bottom:24px;">Adjuntamos tu certificado de donación 🎖️</p>
