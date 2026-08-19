@@ -153,7 +153,7 @@ export default function Donor() {
           <div className="max-w-2xl mx-auto px-6 py-8">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               {selected.image_url
-                ? <img src={selected.image_url} alt={selected.name} className="h-48 w-full object-cover" />
+                ? <img src={selected.image_url} alt={selected.name} className="w-full max-h-96 object-contain" />
                 : <div style={{ backgroundColor: col.banner }} className="h-32" />
               }
               <div className="p-8">
@@ -294,7 +294,7 @@ export default function Donor() {
                   <button key={c.id} onClick={() => setSelected(c)}
                     className="bg-white rounded-2xl border border-gray-100 overflow-hidden text-left hover:shadow-md hover:border-emerald-200 transition-all duration-200 group">
                     {c.image_url
-                      ? <img src={c.image_url} alt={c.name} className="h-24 w-full object-cover" />
+                      ? <img src={c.image_url} alt={c.name} className="w-full max-h-48 object-contain" />
                       : <div style={{ backgroundColor: col.banner }} className="h-24" />
                     }
                     <div className="p-5">
