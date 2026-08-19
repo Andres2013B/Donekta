@@ -136,7 +136,7 @@ export default function CommunityEdit() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Imagen de la comunidad</label>
               {imagePreview ? (
                 <div className="relative">
-                  <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-xl mb-2" />
+                  <img src={imagePreview} alt="Preview" className="w-full max-h-96 object-contain rounded-xl mb-2" />
                   <label className="absolute bottom-4 right-4 bg-white text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg shadow cursor-pointer hover:bg-gray-50 flex items-center gap-1.5">
                     <Upload className="w-3.5 h-3.5" /> Cambiar imagen
                     <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
