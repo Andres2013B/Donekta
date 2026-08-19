@@ -116,7 +116,7 @@ export default function Admin() {
                     {donations.map((d: any) => (
                       <div key={d.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                         <div>
-                          <p className="font-medium text-gray-900 text-sm">{d.donor_email}</p>
+                          <p className="font-medium text-gray-900 text-sm">{d.donor_name <p className="font-medium text-gray-900 text-sm">{d.donor_email}</p><p className="font-medium text-gray-900 text-sm">{d.donor_email}</p> <span className="text-gray-500 font-normal mr-1">({d.donor_name})</span>}{d.donor_email}</p>
                           <p className="text-xs text-gray-400">→ {d.communities?.name} · {new Date(d.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</p>
                         </div>
                         <span className="font-bold text-emerald-600 text-sm">${d.amount.toLocaleString()} MXN</span>
