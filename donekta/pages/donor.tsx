@@ -270,7 +270,7 @@ export default function Donor() {
                   <button key={c.id} onClick={() => setSelected(c)}
                     className="bg-white rounded-2xl border border-gray-100 overflow-hidden text-left hover:shadow-md hover:border-emerald-200 transition-all duration-200 group">
                     {c.image_url
-                      ? <img src={c.image_url} alt={c.name} className="h-24 w-full object-cover" />
+                      ? <img src={c.image_url} alt={c.name} className="w-full max-h-48 object-contain" />
                       : <div style={{ backgroundColor: col.banner }} className="h-24" />
                     }
                     <div className="p-5">
