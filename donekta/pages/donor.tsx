@@ -146,7 +146,7 @@ export default function Donor() {
           <div className="max-w-2xl mx-auto px-6 py-8">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               {selected.image_url
-                ? <img src={selected.image_url} alt={selected.name} className="h-48 w-full object-cover" />
+                ? <img src={selected.image_url} alt={selected.name} className="w-full max-h-96 object-contain" />
                 : <div style={{ backgroundColor: col.banner }} className="h-32" />
               }
               <div className="p-8">
