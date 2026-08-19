@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
-import { CheckCircle, XCircle, Clock, Heart, Copy, Check, Trash2, Users, DollarSign } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Heart, Copy, Check, Trash2, Users, DollarSign, Download } from 'lucide-react'
 import { supabase, Community } from '../lib/supabase'
 
 export default function Admin() {
@@ -47,6 +47,27 @@ export default function Admin() {
   const deleteCommunity = async (id: string) => {
     if (!confirm('¿Seguro que quieres eliminar esta comunidad?')) return
     await supabase.from('communities').delete().eq('id', id); fetchAll()
+  }
+
+  const exportCSV = async () => {
+    const { data } = await supabase.from('donations').select('*, communities(name)').order('created_at', { ascending: false })
+    if (!data || data.length === 0) return
+    const rows = [
+      ['Fecha', 'Nombre', 'Email', 'Comunidad', 'Monto MXN', 'Frecuencia'],
+      ...data.map((d: any) => [
+        new Date(d.created_at).toLocaleDateString('es-MX'),
+        d.donor_name || 'Anónimo',
+        d.donor_email || '',
+        d.communities?.name || '',
+        d.amount,
+        d.frequency || 'única',
+      ])
+    ]
+    const csv = rows.map(r => r.map(String).map(v => `"${v.toString().replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = 'donaciones-donekta.csv'
+    a.click(); URL.revokeObjectURL(url)
   }
 
   const copyLink = (id: string) => {
@@ -111,7 +132,12 @@ export default function Admin() {
           <div>
             {donations.length > 0 && (
                 <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
-                  <h2 className="font-black text-gray-900 mb-4">Donaciones recientes</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-black text-gray-900">Donaciones recientes</h2>
+                    <button onClick={exportCSV} className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded-lg">
+                      <Download className="w-3.5 h-3.5" /> Exportar CSV
+                    </button>
+                  </div>
                   <div className="space-y-3">
                     {donations.map((d: any) => (
                       <div key={d.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
