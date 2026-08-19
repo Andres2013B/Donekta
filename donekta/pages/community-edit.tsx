@@ -64,9 +64,9 @@ export default function CommunityEdit() {
       if (imageFile) {
         const ext = imageFile.name.split('.').pop()
         const path = `${community.id}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('donekta').upload(path, imageFile, { upsert: true })
+        const { error: uploadError } = await supabase.storage.from('Donekta').upload(path, imageFile, { upsert: true })
         if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage.from('donekta').getPublicUrl(path)
+        const { data: urlData } = supabase.storage.from('Donekta').getPublicUrl(path)
         imageUrl = urlData.publicUrl
       }
       const { error: updateError } = await supabase.from('communities').update({
