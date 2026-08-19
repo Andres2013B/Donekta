@@ -18,7 +18,8 @@ export default function CommunityEdit() {
   const [form, setForm] = useState({
     name: '', category: '', mission: '', description: '',
     beneficiaries: '', city: '', state: '', goal_amount: '',
-    website: '', facebook: '', instagram: '', contact_phone: ''
+    website: '', facebook: '', instagram: '', contact_phone: '',
+    customCategory: ''
   })
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
@@ -36,12 +37,16 @@ export default function CommunityEdit() {
         return
       }
       setCommunity(data)
+      const knownCategories = ['Alimentación','Educación','Salud','Vivienda','Medio ambiente','Arte y cultura','Derechos humanos','Otro']
+      const savedCategory = data.category || ''
+      const isKnown = knownCategories.includes(savedCategory)
       setForm({
-        name: data.name || '', category: data.category || '', mission: data.mission || '',
+        name: data.name || '', category: isKnown ? savedCategory : 'Otro', mission: data.mission || '',
         description: data.description || '', beneficiaries: data.beneficiaries || '',
         city: data.city || '', state: data.state || '', goal_amount: data.goal_amount?.toString() || '',
         website: data.website || '', facebook: data.facebook || '',
-        instagram: data.instagram || '', contact_phone: data.contact_phone || ''
+        instagram: data.instagram || '', contact_phone: data.contact_phone || '',
+        customCategory: isKnown ? '' : savedCategory
       })
       if (data.image_url) setImagePreview(data.image_url)
       setLoading(false)
@@ -69,8 +74,9 @@ export default function CommunityEdit() {
         const { data: urlData } = supabase.storage.from('Donekta').getPublicUrl(path)
         imageUrl = urlData.publicUrl
       }
+      const finalCategory = form.category === 'Otro' && form.customCategory.trim() ? form.customCategory.trim() : form.category
       const { error: updateError } = await supabase.from('communities').update({
-        name: form.name, category: form.category, mission: form.mission,
+        name: form.name, category: finalCategory, mission: form.mission,
         description: form.description, beneficiaries: form.beneficiaries,
         city: form.city, state: form.state, goal_amount: Number(form.goal_amount) || 0,
         website: form.website, facebook: form.facebook, instagram: form.instagram,
@@ -157,6 +163,11 @@ export default function CommunityEdit() {
                     </button>
                   ))}
                 </div>
+                {form.category === 'Otro' && (
+                  <input type="text" value={form.customCategory} onChange={e => set('customCategory', e.target.value)}
+                    placeholder="Escribe tu categoría" autoFocus
+                    className="mt-2 w-full border border-emerald-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500" />
+                )}
               </div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1.5">Misión</label>
                 <textarea value={form.mission} onChange={e => set('mission', e.target.value)} rows={3} placeholder="¿Qué hace tu comunidad?"
