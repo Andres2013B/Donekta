@@ -19,6 +19,7 @@ export default function Donor() {
   const [dedicateEmail, setDedicateEmail] = useState('')
   const [frequency, setFrequency] = useState<'única' | 'mensual' | 'trimestral' | 'semestral' | 'anual'>('única')
   const [lastDonationId, setLastDonationId] = useState<string | null>(null)
+  const [anonymousDonation, setAnonymousDonation] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -69,11 +70,17 @@ export default function Donor() {
       frequency,
     }]).select().single()
     if (donData) setLastDonationId(donData.id)
+    const displayName = anonymousDonation ? 'Anónimo' : (dedicateTo.trim() || donorName || 'Anónimo')
     await fetch('/api/send-donation-confirmation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ donorEmail, donorName, amount, communityName: selected.name, frequency, dedicateTo, dedicateEmail })
+      body: JSON.stringify({ donorEmail, donorName: displayName, amount, communityName: selected.name, frequency, dedicateTo: anonymousDonation ? '' : dedicateTo, dedicateEmail: anonymousDonation ? '' : dedicateEmail })
     })
+    await fetch('/api/send-community-notification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ communityEmail: selected.contact_email, communityName: selected.name, amount, donorDisplayName: displayName })
+    }).catch(() => {})
     setShowCheckout(false)
     setDonated(true)
   }
@@ -81,7 +88,7 @@ export default function Donor() {
   const reset = () => {
     setDonated(false); setSelected(null); setAmount(180); setCustomAmount('')
     setDedicateTo(''); setDedicateEmail(''); setFrequency('única')
-    setLastDonationId(null)
+    setLastDonationId(null); setAnonymousDonation(false)
     fetchCommunities()
   }
 
@@ -146,7 +153,7 @@ export default function Donor() {
           <div className="max-w-2xl mx-auto px-6 py-8">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               {selected.image_url
-                ? <img src={selected.image_url} alt={selected.name} className="w-full max-h-96 object-contain" />
+                ? <img src={selected.image_url} alt={selected.name} className="h-48 w-full object-cover" />
                 : <div style={{ backgroundColor: col.banner }} className="h-32" />
               }
               <div className="p-8">
@@ -195,12 +202,28 @@ export default function Donor() {
 
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Dedicar donación a alguien <span className="text-gray-400 font-normal">(opcional)</span>
+                    Nombre en la donación <span className="text-gray-400 font-normal">(opcional)</span>
                   </label>
-                  <input type="text" placeholder="Nombre de la persona"
-                    value={dedicateTo} onChange={e => setDedicateTo(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400 mb-2" />
-                  {dedicateTo && (
+                  <div className="flex gap-2 mb-2">
+                    <button onClick={() => { setAnonymousDonation(false); setDedicateTo('') }}
+                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${!anonymousDonation ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
+                      Mi nombre
+                    </button>
+                    <button onClick={() => { setAnonymousDonation(true); setDedicateTo(''); setDedicateEmail('') }}
+                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${anonymousDonation ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
+                      Anónimo
+                    </button>
+                    <button onClick={() => { setAnonymousDonation(false) }}
+                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${!anonymousDonation && dedicateTo ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
+                      Dedicar a alguien
+                    </button>
+                  </div>
+                  {!anonymousDonation && (
+                    <input type="text" placeholder="Nombre de la persona"
+                      value={dedicateTo} onChange={e => setDedicateTo(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400 mb-2" />
+                  )}
+                  {!anonymousDonation && dedicateTo && (
                     <>
                       <input type="email" placeholder="Correo de esa persona (opcional)"
                         value={dedicateEmail} onChange={e => setDedicateEmail(e.target.value)}
@@ -211,6 +234,7 @@ export default function Donor() {
                       </p>
                     </>
                   )}
+                  {anonymousDonation && <p className="text-xs text-gray-400 mt-1">Tu nombre no aparecerá en el certificado ni correos.</p>}
                 </div>
 
                 <button onClick={() => setShowCheckout(true)} disabled={amount < 1}
@@ -270,7 +294,7 @@ export default function Donor() {
                   <button key={c.id} onClick={() => setSelected(c)}
                     className="bg-white rounded-2xl border border-gray-100 overflow-hidden text-left hover:shadow-md hover:border-emerald-200 transition-all duration-200 group">
                     {c.image_url
-                      ? <img src={c.image_url} alt={c.name} className="w-full max-h-48 object-contain" />
+                      ? <img src={c.image_url} alt={c.name} className="h-24 w-full object-cover" />
                       : <div style={{ backgroundColor: col.banner }} className="h-24" />
                     }
                     <div className="p-5">
