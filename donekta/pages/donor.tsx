@@ -206,36 +206,38 @@ export default function Donor() {
                     Nombre en la donación <span className="text-gray-400 font-normal">(opcional)</span>
                   </label>
                   <div className="flex gap-2 mb-2">
-                    <button onClick={() => { setAnonymousDonation(false); setDedicateTo('') }}
-                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${!anonymousDonation ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
+                    <button type="button" onClick={() => { setDedicateMode('self'); setAnonymousDonation(false); setDedicateTo(''); setDedicateEmail('') }}
+                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${dedicateMode === 'self' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
                       Mi nombre
                     </button>
-                    <button onClick={() => { setAnonymousDonation(true); setDedicateTo(''); setDedicateEmail('') }}
-                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${anonymousDonation ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
+                    <button type="button" onClick={() => { setDedicateMode('anonymous'); setAnonymousDonation(true); setDedicateTo(''); setDedicateEmail('') }}
+                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${dedicateMode === 'anonymous' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
                       Anónimo
                     </button>
-                    <button onClick={() => { setAnonymousDonation(false) }}
-                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${!anonymousDonation && dedicateTo ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
-                      Dedicar a alguien
+                    <button type="button" onClick={() => { setDedicateMode('dedicate'); setAnonymousDonation(false); setDedicateTo(''); setDedicateEmail('') }}
+                      className={`flex-1 py-2 text-sm rounded-xl border-2 font-medium transition-all ${dedicateMode === 'dedicate' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'}`}>
+                      Dedicar
                     </button>
                   </div>
-                  {!anonymousDonation && (
-                    <input type="text" placeholder="Nombre de la persona"
-                      value={dedicateTo} onChange={e => setDedicateTo(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400 mb-2" />
-                  )}
-                  {!anonymousDonation && dedicateTo && (
+                  {dedicateMode === 'dedicate' && (
                     <>
-                      <input type="email" placeholder="Correo de esa persona (opcional)"
-                        value={dedicateEmail} onChange={e => setDedicateEmail(e.target.value)}
-                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
-                      <p className="text-xs text-emerald-600 mt-1.5">
-                        ✓ Dedicada a <strong>{dedicateTo}</strong>
-                        {dedicateEmail ? <> — el certificado llegará a <strong>{dedicateEmail}</strong></> : ' — el certificado llegará a tu correo'}
-                      </p>
+                      <input type="text" placeholder="Nombre de la persona" autoFocus
+                        value={dedicateTo} onChange={e => setDedicateTo(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400 mb-2" />
+                      {dedicateTo && (
+                        <>
+                          <input type="email" placeholder="Correo de esa persona (opcional)"
+                            value={dedicateEmail} onChange={e => setDedicateEmail(e.target.value)}
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                          <p className="text-xs text-emerald-600 mt-1.5">
+                            ✓ Dedicada a <strong>{dedicateTo}</strong>
+                            {dedicateEmail ? <> — el certificado llegará a <strong>{dedicateEmail}</strong></> : ' — el certificado llegará a tu correo'}
+                          </p>
+                        </>
+                      )}
                     </>
                   )}
-                  {anonymousDonation && <p className="text-xs text-gray-400 mt-1">Tu nombre no aparecerá en el certificado ni correos.</p>}
+                  {dedicateMode === 'anonymous' && <p className="text-xs text-gray-400 mt-1">Tu nombre no aparecerá en el certificado ni correos.</p>}
                 </div>
 
                 <button onClick={() => setShowCheckout(true)} disabled={amount < 1}
