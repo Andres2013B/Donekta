@@ -20,6 +20,7 @@ export default function Donor() {
   const [frequency, setFrequency] = useState<'única' | 'mensual' | 'trimestral' | 'semestral' | 'anual'>('única')
   const [lastDonationId, setLastDonationId] = useState<string | null>(null)
   const [anonymousDonation, setAnonymousDonation] = useState(false)
+  const [dedicateMode, setDedicateMode] = useState<'self' | 'anonymous' | 'dedicate'>('self')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
