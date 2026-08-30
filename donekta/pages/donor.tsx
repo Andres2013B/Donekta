@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { Heart, Search, MapPin, Users, ArrowLeft } from 'lucide-react'
 import { supabase, Community } from '../lib/supabase'
 import DonationCheckout from '../components/DonationCheckout'
+import DonorIdentificationForm from '../components/DonorIdentificationForm'
 
 export default function Donor() {
   const [communities, setCommunities] = useState<Community[]>([])
@@ -58,6 +59,8 @@ export default function Donor() {
   }
   const getColor = (cat: string) => catColor[cat] || catColor['Otro']
 
+  const [requiresPld, setRequiresPld] = useState(false)
+
   const handleDonationSuccess = async () => {
     if (!selected) return
     await supabase.from('communities').update({
@@ -82,6 +85,16 @@ export default function Donor() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ communityEmail: selected.contact_email, communityName: selected.name, amount, donorDisplayName: displayName })
     }).catch(() => {})
+    // Verificación PLD
+    try {
+      const pldRes = await fetch('/api/pld/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donorEmail })
+      })
+      const pldData = await pldRes.json()
+      if (pldData.requiresIdentification) setRequiresPld(true)
+    } catch (_) {}
     setShowCheckout(false)
     setDonated(true)
   }
@@ -89,7 +102,8 @@ export default function Donor() {
   const reset = () => {
     setDonated(false); setSelected(null); setAmount(180); setCustomAmount('')
     setDedicateTo(''); setDedicateEmail(''); setFrequency('única')
-    setLastDonationId(null); setAnonymousDonation(false)
+    setLastDonationId(null); setAnonymousDonation(false); setRequiresPld(false)
+    setDedicateMode('self')
     fetchCommunities()
   }
 
@@ -106,6 +120,11 @@ export default function Donor() {
             <strong>{selected.name}</strong> fue procesada.
             {dedicateTo && <span> Dedicada a <strong>{dedicateTo}</strong>.</span>}
           </p>
+          {requiresPld && (
+            <div className="mb-6 text-left">
+              <DonorIdentificationForm donorEmail={donorEmail} onCompleted={() => setRequiresPld(false)} />
+            </div>
+          )}
 
           <button onClick={reset} className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors text-sm">
             Donar a otra comunidad
