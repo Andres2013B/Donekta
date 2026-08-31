@@ -11,6 +11,7 @@ export default function DonorIdentificationForm({ donorEmail, onCompleted }: Pro
   const [address, setAddress] = useState('')
   const [sourceOfFunds, setSourceOfFunds] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
