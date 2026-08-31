@@ -11,13 +11,14 @@ export default function DonorIdentificationForm({ donorEmail, onCompleted }: Pro
   const [address, setAddress] = useState('')
   const [sourceOfFunds, setSourceOfFunds] = useState('')
   const [file, setFile] = useState<File | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!file) { setError('Adjunta una identificación oficial (INE, pasaporte).'); return }
+    if (!acceptedTerms) { setError('Debes aceptar los términos antes de continuar.'); return }
     setSubmitting(true); setError(null)
 
     const formData = new FormData()
@@ -65,8 +66,17 @@ export default function DonorIdentificationForm({ donorEmail, onCompleted }: Pro
         <label className="block text-sm text-gray-600 mb-1">Identificación oficial (INE, pasaporte)</label>
         <input type="file" accept="image/*,application/pdf" onChange={e => setFile(e.target.files?.[0] ?? null)} required />
       </div>
+      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
+        <input type="checkbox" id="pld-terms" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)}
+          className="mt-1 flex-shrink-0" />
+        <label htmlFor="pld-terms" className="text-xs text-amber-800 leading-relaxed cursor-pointer">
+          Declaro bajo protesta de decir verdad que la información y documentos proporcionados son auténticos y verídicos. 
+          Entiendo que proporcionar información falsa constituye un delito federal y que asumo toda la responsabilidad legal derivada de ello, 
+          conforme a la Ley Federal para la Prevención e Identificación de Operaciones con Recursos de Procedencia Ilícita (LFPIORPI).
+        </label>
+      </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <button type="submit" disabled={submitting}
+      <button type="submit" disabled={submitting || !acceptedTerms}
         className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm">
         {submitting ? 'Enviando...' : 'Enviar información'}
       </button>
