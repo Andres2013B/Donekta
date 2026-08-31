@@ -1,0 +1,7 @@
+import { umaToPesos } from "./uma";
+
+export const UMBRAL_IDENTIFICACION_UMA = 1605;
+export const UMBRAL_IDENTIFICACION_MXN = umaToPesos(UMBRAL_IDENTIFICACION_UMA);
+export const UMBRAL_AVISO_UMA = UMBRAL_IDENTIFICACION_UMA;
+export const UMBRAL_AVISO_MXN = umaToPesos(UMBRAL_AVISO_UMA);
+export const VENTANA_ACUMULACION_MESES = 6;
