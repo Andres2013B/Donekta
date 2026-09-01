@@ -22,6 +22,8 @@ export default function Donor() {
   const [lastDonationId, setLastDonationId] = useState<string | null>(null)
   const [anonymousDonation, setAnonymousDonation] = useState(false)
   const [dedicateMode, setDedicateMode] = useState<'self' | 'anonymous' | 'dedicate'>('self')
+  const [projects, setProjects] = useState<any[]>([])
+  const [selectedProject, setSelectedProject] = useState<any>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -41,6 +43,13 @@ export default function Donor() {
       .order('created_at', { ascending: false })
     setCommunities(data || [])
     setLoading(false)
+  }
+
+  const handleSelectCommunity = async (c: Community) => {
+    setSelected(c)
+    setSelectedProject(null)
+    const { data } = await supabase.from('projects').select('*').eq('community_id', c.id).eq('status', 'active').order('created_at', { ascending: false })
+    setProjects(data || [])
   }
 
   const filtered = communities.filter(c =>
@@ -189,6 +198,40 @@ export default function Donor() {
                   <p className="text-gray-600 text-sm leading-relaxed mb-6">{selected.description || selected.mission}</p>
                 )}
 
+                {/* PROYECTOS */}
+                {projects.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-sm font-bold text-gray-700 mb-3">Elige un proyecto (opcional)</p>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => setSelectedProject(null)}
+                        className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm transition-all ${!selectedProject ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'}`}>
+                        <span className="font-medium text-gray-900">Donación general</span>
+                        <span className="text-gray-400 text-xs ml-2">Sin proyecto específico</span>
+                      </button>
+                      {projects.map((p: any) => (
+                        <button key={p.id}
+                          onClick={() => setSelectedProject(p)}
+                          className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm transition-all ${selectedProject?.id === p.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'}`}>
+                          <p className="font-medium text-gray-900">{p.name}</p>
+                          {p.description && <p className="text-gray-500 text-xs mt-0.5">{p.description}</p>}
+                          {p.goal_amount > 0 && (
+                            <div className="mt-2">
+                              <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                <span>${(p.raised_amount || 0).toLocaleString('es-MX')} recaudados</span>
+                                <span>Meta: ${p.goal_amount.toLocaleString('es-MX')} MXN</span>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, ((p.raised_amount || 0) / p.goal_amount) * 100)}%` }} />
+                              </div>
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="mb-6">
                   <p className="text-sm font-semibold text-gray-700 mb-3">Frecuencia de donación</p>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -313,7 +356,7 @@ export default function Donor() {
               {filtered.map(c => {
                 const col = getColor(c.category)
                 return (
-                  <button key={c.id} onClick={() => setSelected(c)}
+                  <button key={c.id} onClick={() => handleSelectCommunity(c)}
                     className="bg-white rounded-2xl border border-gray-100 overflow-hidden text-left hover:shadow-md hover:border-emerald-200 transition-all duration-200 group">
                     {c.image_url
                       ? <img src={c.image_url} alt={c.name} className="w-full max-h-48 object-contain" />
