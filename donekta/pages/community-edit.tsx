@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
-import { Heart, CheckCircle, Upload } from 'lucide-react'
+import { Heart, CheckCircle, Upload, Plus, Trash2, Target } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 const CATEGORIES = ['Alimentación','Educación','Salud','Vivienda','Medio ambiente','Arte y cultura','Derechos humanos','Otro']
@@ -21,6 +21,12 @@ export default function CommunityEdit() {
     website: '', facebook: '', instagram: '', contact_phone: '',
     customCategory: ''
   })
+
+  // Proyectos
+  const [projects, setProjects] = useState<any[]>([])
+  const [showNewProject, setShowNewProject] = useState(false)
+  const [newProject, setNewProject] = useState({ name: '', description: '', goal_amount: '' })
+  const [savingProject, setSavingProject] = useState(false)
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
@@ -49,6 +55,11 @@ export default function CommunityEdit() {
         customCategory: isKnown ? '' : savedCategory
       })
       if (data.image_url) setImagePreview(data.image_url)
+
+      // Cargar proyectos
+      const { data: projs } = await supabase.from('projects').select('*').eq('community_id', data.id).order('created_at', { ascending: false })
+      setProjects(projs || [])
+
       setLoading(false)
     }
     load()
@@ -91,6 +102,35 @@ export default function CommunityEdit() {
     }
   }
 
+  const handleAddProject = async () => {
+    if (!newProject.name.trim() || !community) return
+    setSavingProject(true)
+    const { data, error } = await supabase.from('projects').insert([{
+      community_id: community.id,
+      name: newProject.name.trim(),
+      description: newProject.description.trim(),
+      goal_amount: Number(newProject.goal_amount) || 0,
+    }]).select().single()
+    if (!error && data) {
+      setProjects(p => [data, ...p])
+      setNewProject({ name: '', description: '', goal_amount: '' })
+      setShowNewProject(false)
+    }
+    setSavingProject(false)
+  }
+
+  const handleDeleteProject = async (id: string) => {
+    if (!confirm('¿Eliminar este proyecto?')) return
+    await supabase.from('projects').delete().eq('id', id)
+    setProjects(p => p.filter(x => x.id !== id))
+  }
+
+  const handleToggleStatus = async (id: string, status: string) => {
+    const newStatus = status === 'active' ? 'paused' : 'active'
+    await supabase.from('projects').update({ status: newStatus }).eq('id', id)
+    setProjects(p => p.map(x => x.id === id ? { ...x, status: newStatus } : x))
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
@@ -130,7 +170,9 @@ export default function CommunityEdit() {
                 className="text-sm text-gray-400 hover:text-gray-600">Cerrar sesión</button>
             </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+
+          {/* PERFIL */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
             <h2 className="text-xl font-black text-gray-900 mb-6">Editar perfil de comunidad</h2>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Imagen de la comunidad</label>
@@ -200,6 +242,94 @@ export default function CommunityEdit() {
               className="w-full mt-8 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm">
               {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
+          </div>
+
+          {/* PROYECTOS */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-emerald-500" />
+                <h2 className="text-xl font-black text-gray-900">Proyectos</h2>
+              </div>
+              <button onClick={() => setShowNewProject(true)}
+                className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-xl">
+                <Plus className="w-4 h-4" /> Nuevo proyecto
+              </button>
+            </div>
+
+            {showNewProject && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
+                <p className="text-sm font-semibold text-emerald-800 mb-3">Nuevo proyecto</p>
+                <div className="space-y-3">
+                  <input type="text" placeholder="Nombre del proyecto *" value={newProject.name}
+                    onChange={e => setNewProject(p => ({ ...p, name: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                  <textarea placeholder="Descripción (opcional)" rows={2} value={newProject.description}
+                    onChange={e => setNewProject(p => ({ ...p, description: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400 resize-none" />
+                  <input type="number" placeholder="Meta en MXN (ej. 30000)" value={newProject.goal_amount}
+                    onChange={e => setNewProject(p => ({ ...p, goal_amount: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                  <div className="flex gap-2">
+                    <button onClick={handleAddProject} disabled={savingProject || !newProject.name.trim()}
+                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-sm font-semibold py-2 rounded-xl">
+                      {savingProject ? 'Guardando...' : 'Guardar proyecto'}
+                    </button>
+                    <button onClick={() => { setShowNewProject(false); setNewProject({ name: '', description: '', goal_amount: '' }) }}
+                      className="border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-xl">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {projects.length === 0 && !showNewProject ? (
+              <div className="text-center py-8">
+                <Target className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                <p className="text-gray-400 text-sm">Aún no tienes proyectos.</p>
+                <p className="text-gray-400 text-xs mt-1">Los proyectos aparecen dentro de tu perfil para que los donadores elijan a cuál apoyar.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {projects.map((p: any) => (
+                  <div key={p.id} className="border border-gray-100 rounded-xl p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-gray-900 text-sm">{p.name}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {p.status === 'active' ? 'Activo' : 'Pausado'}
+                          </span>
+                        </div>
+                        {p.description && <p className="text-xs text-gray-500 mb-2">{p.description}</p>}
+                        {p.goal_amount > 0 && (
+                          <div>
+                            <div className="flex justify-between text-xs text-gray-500 mb-1">
+                              <span>${(p.raised_amount || 0).toLocaleString('es-MX')} recaudados</span>
+                              <span>Meta: ${p.goal_amount.toLocaleString('es-MX')} MXN</span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-1.5">
+                              <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, ((p.raised_amount || 0) / p.goal_amount) * 100)}%` }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button onClick={() => handleToggleStatus(p.id, p.status)}
+                          className="text-xs border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg hover:bg-gray-50">
+                          {p.status === 'active' ? 'Pausar' : 'Activar'}
+                        </button>
+                        <button onClick={() => handleDeleteProject(p.id)}
+                          className="text-red-400 hover:text-red-600 p-1.5">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
