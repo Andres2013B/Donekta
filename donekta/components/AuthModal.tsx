@@ -63,13 +63,18 @@ export default function AuthModal({ onClose }: Props) {
       // Now sign in with the verified credentials
       const { error: authErr } = await supabase.auth.signInWithPassword({ email, password })
       if (authErr) {
-        // If password fails, update it via admin API then retry
-        await fetch('/api/reset-password-temp', {
+        // Actualizar contraseña vía admin y reintentar
+        const resetRes = await fetch('/api/reset-password-temp', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password, secret: 'donekta-admin-2026' })
         })
-        const { error: retryErr } = await supabase.auth.signInWithPassword({ email, password })
-        if (retryErr) throw new Error('Error al iniciar sesión. Intenta de nuevo.')
+        if (resetRes.ok) {
+          await new Promise(r => setTimeout(r, 500))
+          const { error: retryErr } = await supabase.auth.signInWithPassword({ email, password })
+          if (retryErr) throw new Error('Contraseña incorrecta. Verifica e intenta de nuevo.')
+        } else {
+          throw new Error('Contraseña incorrecta. Verifica e intenta de nuevo.')
+        }
       }
       if (email === 'andresbraver@gmail.com') { router.push('/admin') }
       else {
