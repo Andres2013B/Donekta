@@ -47,43 +47,6 @@ export default function AuthModal({ onClose }: Props) {
     setCommunityReqLoading(false)
   }
 
-  const CommunityRequestModal = () => (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h3 className="font-black text-gray-900">Solicitud de institución</h3>
-          <button onClick={() => { setShowCommunityForm(false); setCommunityReqSent(false) }} className="text-gray-400 hover:text-gray-600">✕</button>
-        </div>
-        <div className="p-5">
-          {communityReqSent ? (
-            <div className="text-center py-6">
-              <div className="text-4xl mb-3">✅</div>
-              <p className="font-bold text-gray-900 mb-2">¡Solicitud enviada!</p>
-              <p className="text-sm text-gray-500">Revisaremos tu solicitud en 1-3 días hábiles y te contactaremos.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-500 mb-4">Llena el formulario y nos ponemos en contacto contigo.</p>
-              <input type="text" placeholder="Tu nombre" value={communityReq.name}
-                onChange={e => setCommunityReq(r => ({ ...r, name: e.target.value }))}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
-              <input type="email" placeholder="Correo electrónico *" value={communityReq.email}
-                onChange={e => setCommunityReq(r => ({ ...r, email: e.target.value }))}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
-              <input type="text" placeholder="Nombre de la institución *" value={communityReq.institution}
-                onChange={e => setCommunityReq(r => ({ ...r, institution: e.target.value }))}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
-              <button onClick={sendCommunityRequest} disabled={communityReqLoading || !communityReq.email || !communityReq.institution}
-                className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl text-sm mt-2">
-                {communityReqLoading ? 'Enviando...' : 'Enviar solicitud'}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-
   const go = (m: Mode) => { setMode(m); setStep('form'); setOtp(''); setError(''); setNewPass(''); setConfirmPass('') }
 
   // ── LOGIN ──
@@ -402,7 +365,42 @@ export default function AuthModal({ onClose }: Props) {
       </div>
       {showTerms && <TermsModal />}
       {showPrivacy && <PrivacyModal />}
-      {showCommunityForm && <CommunityRequestModal />}
+      {showCommunityForm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h3 className="font-black text-gray-900">Solicitud de institución</h3>
+              <button onClick={() => { setShowCommunityForm(false); setCommunityReqSent(false) }} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <div className="p-5">
+              {communityReqSent ? (
+                <div className="text-center py-6">
+                  <div className="text-4xl mb-3">✅</div>
+                  <p className="font-bold text-gray-900 mb-2">¡Solicitud enviada!</p>
+                  <p className="text-sm text-gray-500">Revisaremos tu solicitud en 1-3 días hábiles y te contactaremos.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-500 mb-4">Llena el formulario y nos ponemos en contacto contigo.</p>
+                  <input type="text" placeholder="Tu nombre" value={communityReq.name}
+                    onChange={e => setCommunityReq(r => ({ ...r, name: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                  <input type="email" placeholder="Correo electrónico *" value={communityReq.email}
+                    onChange={e => setCommunityReq(r => ({ ...r, email: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                  <input type="text" placeholder="Nombre de la institución *" value={communityReq.institution}
+                    onChange={e => setCommunityReq(r => ({ ...r, institution: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                  <button onClick={sendCommunityRequest} disabled={communityReqLoading || !communityReq.email || !communityReq.institution}
+                    className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl text-sm mt-2">
+                    {communityReqLoading ? 'Enviando...' : 'Enviar solicitud'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
