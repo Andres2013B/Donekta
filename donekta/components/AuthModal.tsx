@@ -93,16 +93,17 @@ export default function AuthModal({ onClose }: Props) {
     if (!email || !password) { setError('Llena todos los campos.'); return }
     setLoading(true)
     try {
-      // Try Supabase login first; if fails, still send OTP (handles bcrypt variant issues)
+      // Verificar contraseña con Supabase
       const { error: authErr } = await supabase.auth.signInWithPassword({ email, password })
-      if (!authErr) await supabase.auth.signOut()
-      // Send OTP regardless — password will be verified again after OTP
+      if (authErr) throw new Error('Correo o contraseña incorrectos')
+      // Cerrar sesión y mandar OTP
+      await supabase.auth.signOut()
       const r = await fetch('/api/otp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'send', email, type: 'login' })
       })
       const d = await r.json()
-      if (!r.ok) throw new Error(d.error || 'Correo no registrado')
+      if (!r.ok) throw new Error(d.error || 'Error al enviar código')
       setStep('otp')
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
@@ -368,18 +369,18 @@ export default function AuthModal({ onClose }: Props) {
                     </button>
                   )}
                   {mode === 'register' && (
-                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border-2 border-gray-100 hover:border-emerald-200 transition-all">
-                      <div className={`w-5 h-5 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-all ${acceptedTerms ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'}`}
+                    <div className="flex items-start gap-3 p-3 rounded-xl border-2 border-gray-100">
+                      <div className={`w-5 h-5 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-all cursor-pointer ${acceptedTerms ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'}`}
                         onClick={() => setAcceptedTerms(!acceptedTerms)}>
                         {acceptedTerms && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                       </div>
                       <span className="text-xs text-gray-600">
                         Acepto los{' '}
-                        <button type="button" onClick={() => setShowTerms(true)} className="text-emerald-600 underline font-medium">Términos y Condiciones</button>
+                        <span onClick={() => setShowTerms(true)} className="text-emerald-600 underline font-medium cursor-pointer">Términos y Condiciones</span>
                         {' '}y la{' '}
-                        <button type="button" onClick={() => setShowPrivacy(true)} className="text-emerald-600 underline font-medium">Política de Privacidad</button>
+                        <span onClick={() => setShowPrivacy(true)} className="text-emerald-600 underline font-medium cursor-pointer">Política de Privacidad</span>
                       </span>
-                    </label>
+                    </div>
                   )}
                   <Err />
                   <button onClick={mode === 'login' ? loginSend : register} disabled={loading || !email || !password}
