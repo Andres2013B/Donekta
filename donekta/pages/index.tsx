@@ -78,9 +78,6 @@ export default function Home() {
               <button onClick={() => setShowAuth(true)} style={{ fontSize: 15, fontWeight: 700, color: '#fff', background: '#55B584', border: 'none', cursor: 'pointer', padding: '14px 32px', borderRadius: 100 }}>
                 Quiero donar →
               </button>
-              <button onClick={() => setShowAuth(true)} style={{ fontSize: 15, fontWeight: 600, color: '#121826', background: '#fff', border: '1.5px solid #D1F5E3', cursor: 'pointer', padding: '14px 32px', borderRadius: 100 }}>
-                Represento una comunidad
-              </button>
             </div>
           </div>
 
@@ -210,9 +207,6 @@ export default function Home() {
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => setShowAuth(true)} style={{ fontSize: 15, fontWeight: 700, color: '#55B584', background: '#fff', border: 'none', cursor: 'pointer', padding: '14px 32px', borderRadius: 100 }}>
               Quiero donar
-            </button>
-            <button onClick={() => setShowAuth(true)} style={{ fontSize: 15, fontWeight: 600, color: '#fff', background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.4)', cursor: 'pointer', padding: '14px 32px', borderRadius: 100 }}>
-              Registrar mi comunidad
             </button>
           </div>
         </div>
