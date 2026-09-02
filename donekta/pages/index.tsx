@@ -10,7 +10,32 @@ const testimonials: { comment: string; donor_name: string; community?: string }[
 
 export default function Home() {
   const [showAuth, setShowAuth] = useState(false)
+  const [showCommunityForm, setShowCommunityForm] = useState(false)
+  const [commReq, setCommReq] = useState({ name: '', email: '', institution: '', phone: '' })
+  const [commReqSent, setCommReqSent] = useState(false)
+  const [commReqLoading, setCommReqLoading] = useState(false)
   const [stats, setStats] = useState({ donors: 0, communities: 0, raised: 0 })
+
+  const sendCommunityRequest = async () => {
+    if (!commReq.email || !commReq.institution) return
+    setCommReqLoading(true)
+    try {
+      await supabase.from('communities').insert([{
+        name: commReq.institution,
+        contact_email: commReq.email,
+        contact_name: commReq.name,
+        contact_phone: commReq.phone,
+        status: 'pending',
+        category: 'Otro',
+        city: '',
+        image_url: '',
+        goal_amount: 0,
+        raised_amount: 0,
+      }])
+      setCommReqSent(true)
+    } catch (_) {}
+    setCommReqLoading(false)
+  }
 
   useEffect(() => {
     // Load real stats
@@ -50,7 +75,7 @@ export default function Home() {
         <div className="nav-inner" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', height: 68, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <img src="/logo-donekta-oscuro.svg" alt="Donekta" style={{ height: 36 }} />
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <button onClick={() => setShowAuth(true)} className="nav-secondary-btn" style={{ fontSize: 14, color: '#6F737D', background: 'none', border: 'none', cursor: 'pointer', padding: '8px 16px' }}>
+            <button onClick={() => setShowCommunityForm(true)} className="nav-secondary-btn" style={{ fontSize: 14, color: '#6F737D', background: 'none', border: 'none', cursor: 'pointer', padding: '8px 16px' }}>
               Soy comunidad
             </button>
             <button onClick={() => setShowAuth(true)} style={{ fontSize: 14, fontWeight: 600, color: '#fff', background: '#55B584', border: 'none', cursor: 'pointer', padding: '10px 22px', borderRadius: 100 }}>
@@ -285,6 +310,50 @@ export default function Home() {
       </div>
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+
+      {/* MODAL REGISTRO DE COMUNIDAD */}
+      {showCommunityForm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 16 }}>
+          <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 20, borderBottom: '1px solid #F0F4F8' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#121826' }}>Registra tu comunidad</h3>
+              <button onClick={() => { setShowCommunityForm(false); setCommReqSent(false); setCommReq({ name: '', email: '', institution: '', phone: '' }) }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#9CA3AF' }}>✕</button>
+            </div>
+            <div style={{ padding: 20 }}>
+              {commReqSent ? (
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                  <p style={{ fontSize: 16, fontWeight: 700, color: '#121826', marginBottom: 8 }}>¡Solicitud enviada!</p>
+                  <p style={{ fontSize: 14, color: '#6F737D', lineHeight: 1.6 }}>Revisaremos tu solicitud en 1-3 días hábiles y te contactaremos por correo.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <p style={{ fontSize: 14, color: '#6F737D', marginBottom: 4, lineHeight: 1.6 }}>
+                    Llena el formulario y nos ponemos en contacto contigo para activar tu perfil en Donekta.
+                  </p>
+                  <input type="text" placeholder="Tu nombre" value={commReq.name}
+                    onChange={e => setCommReq(r => ({ ...r, name: e.target.value }))}
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: 12, padding: '10px 16px', fontSize: 14, outline: 'none' }} />
+                  <input type="email" placeholder="Correo electrónico *" value={commReq.email}
+                    onChange={e => setCommReq(r => ({ ...r, email: e.target.value }))}
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: 12, padding: '10px 16px', fontSize: 14, outline: 'none' }} />
+                  <input type="text" placeholder="Nombre de la institución *" value={commReq.institution}
+                    onChange={e => setCommReq(r => ({ ...r, institution: e.target.value }))}
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: 12, padding: '10px 16px', fontSize: 14, outline: 'none' }} />
+                  <input type="tel" placeholder="Teléfono (opcional)" value={commReq.phone}
+                    onChange={e => setCommReq(r => ({ ...r, phone: e.target.value }))}
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: 12, padding: '10px 16px', fontSize: 14, outline: 'none' }} />
+                  <button onClick={sendCommunityRequest} disabled={commReqLoading || !commReq.email || !commReq.institution}
+                    style={{ width: '100%', background: commReqLoading || !commReq.email || !commReq.institution ? '#A7D9C1' : '#55B584', color: '#fff', fontWeight: 700, fontSize: 14, padding: '12px 0', borderRadius: 12, border: 'none', cursor: 'pointer', marginTop: 4 }}>
+                    {commReqLoading ? 'Enviando...' : 'Enviar solicitud'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
