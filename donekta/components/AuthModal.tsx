@@ -11,7 +11,6 @@ export default function AuthModal({ onClose }: Props) {
   const router = useRouter()
   const [mode, setMode] = useState<Mode>('login')
   const [step, setStep] = useState<Step>('form')
-  const [userType, setUserType] = useState<'donor' | 'community' | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [newPass, setNewPass] = useState('')
@@ -24,42 +23,15 @@ export default function AuthModal({ onClose }: Props) {
   const [showTerms, setShowTerms] = useState(false)
   const [showPrivacy, setShowPrivacy] = useState(false)
 
-  const [showCommunityForm, setShowCommunityForm] = useState(false)
-  const [communityReq, setCommunityReq] = useState({ name: '', email: '', institution: '' })
-  const [communityReqSent, setCommunityReqSent] = useState(false)
-  const [communityReqLoading, setCommunityReqLoading] = useState(false)
-
-  const sendCommunityRequest = async () => {
-    if (!communityReq.email || !communityReq.institution) return
-    setCommunityReqLoading(true)
-    try {
-      await supabase.from('communities').insert([{
-        name: communityReq.institution,
-        contact_email: communityReq.email,
-        contact_name: communityReq.name,
-        status: 'pending',
-        category: 'Otro',
-        goal_amount: 0,
-        raised_amount: 0,
-      }])
-      setCommunityReqSent(true)
-    } catch (_) {}
-    setCommunityReqLoading(false)
-  }
-
   const go = (m: Mode) => { setMode(m); setStep('form'); setOtp(''); setError(''); setNewPass(''); setConfirmPass('') }
 
-  // ── LOGIN ──
-  // Step 1: verify password then send OTP (session stays active after signIn)
   const loginSend = async () => {
     setError('')
     if (!email || !password) { setError('Llena todos los campos.'); return }
     setLoading(true)
     try {
-      // Verificar contraseña con Supabase
       const { error: authErr } = await supabase.auth.signInWithPassword({ email, password })
       if (authErr) throw new Error('Correo o contraseña incorrectos')
-      // Cerrar sesión y mandar OTP
       await supabase.auth.signOut()
       const r = await fetch('/api/otp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -72,7 +44,6 @@ export default function AuthModal({ onClose }: Props) {
     finally { setLoading(false) }
   }
 
-  // Step 2: verify OTP then sign in
   const loginVerify = async () => {
     setError('')
     if (otp.length !== 6) { setError('Ingresa el código de 6 dígitos.'); return }
@@ -84,10 +55,8 @@ export default function AuthModal({ onClose }: Props) {
       })
       const d = await r.json()
       if (!r.ok) throw new Error(d.error)
-      // Now sign in with the verified credentials
       const { error: authErr } = await supabase.auth.signInWithPassword({ email, password })
       if (authErr) {
-        // Actualizar contraseña vía admin y reintentar
         const resetRes = await fetch('/api/reset-password-temp', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password, secret: 'donekta-admin-2026' })
@@ -110,7 +79,6 @@ export default function AuthModal({ onClose }: Props) {
     finally { setLoading(false) }
   }
 
-  // ── REGISTER ──
   const register = async () => {
     setError('')
     if (!email || !password) { setError('Llena todos los campos.'); return }
@@ -124,7 +92,6 @@ export default function AuthModal({ onClose }: Props) {
     finally { setLoading(false) }
   }
 
-  // ── RESET: Step 1 send OTP ──
   const resetSend = async () => {
     setError('')
     if (!email) { setError('Escribe tu correo.'); return }
@@ -136,19 +103,17 @@ export default function AuthModal({ onClose }: Props) {
       })
       const d = await r.json()
       if (!r.ok) throw new Error(d.error)
-          setStep('otp')
+      setStep('otp')
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
   }
 
-  // ── RESET: Step 2 verify OTP (just advance UI) ──
   const resetVerify = () => {
     setError('')
     if (otp.length !== 6) { setError('Ingresa el código de 6 dígitos.'); return }
     setStep('new-password')
   }
 
-  // ── RESET: Step 3 set new password ──
   const resetNewPassword = async () => {
     setError('')
     if (!newPass || !confirmPass) { setError('Llena todos los campos.'); return }
@@ -168,7 +133,6 @@ export default function AuthModal({ onClose }: Props) {
     finally { setLoading(false) }
   }
 
-  // ── UI COMPONENTS ──
   const Err = () => error ? <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div> : null
 
   const TermsModal = () => (
@@ -184,7 +148,7 @@ export default function AuthModal({ onClose }: Props) {
           <p><strong className="text-gray-900">3. Donaciones</strong><br />Las donaciones son voluntarias y no reembolsables salvo error técnico comprobable.</p>
           <p><strong className="text-gray-900">4. Pagos</strong><br />Los pagos se procesan de forma segura a través de Stripe. No almacenamos datos de tarjetas.</p>
           <p><strong className="text-gray-900">5. Responsabilidad</strong><br />Donekta actúa como intermediario y no es responsable por el uso de los fondos una vez transferidos.</p>
-          <p><strong className="text-gray-900">6. Contacto</strong><br />andresbraver@gmail.com</p>
+          <p><strong className="text-gray-900">6. Contacto</strong><br />hola@donekta.com</p>
         </div>
         <div className="p-5 border-t border-gray-100">
           <button onClick={() => { setShowTerms(false); setAcceptedTerms(true) }} className="w-full bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-sm">Aceptar y cerrar</button>
@@ -204,7 +168,7 @@ export default function AuthModal({ onClose }: Props) {
           <p><strong className="text-gray-900">1. Datos</strong><br />Recopilamos nombre, correo y datos de donaciones. No almacenamos datos de tarjetas.</p>
           <p><strong className="text-gray-900">2. Uso</strong><br />Para procesar donaciones y mejorar la plataforma. No vendemos tus datos.</p>
           <p><strong className="text-gray-900">3. Seguridad</strong><br />Encriptación SSL + Stripe PCI DSS.</p>
-          <p><strong className="text-gray-900">4. Derechos</strong><br />Puedes solicitar eliminar tu cuenta escribiendo a andresbraver@gmail.com</p>
+          <p><strong className="text-gray-900">4. Derechos</strong><br />Puedes solicitar eliminar tu cuenta escribiendo a hola@donekta.com</p>
         </div>
         <div className="p-5 border-t border-gray-100">
           <button onClick={() => { setShowPrivacy(false); setAcceptedTerms(true) }} className="w-full bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-sm">Aceptar y cerrar</button>
@@ -228,8 +192,7 @@ export default function AuthModal({ onClose }: Props) {
           </div>
 
           <div className="p-6">
-
-            {/* OTP STEP (login & reset) */}
+            {/* OTP */}
             {step === 'otp' && (
               <div className="space-y-4">
                 <div className="text-center mb-2">
@@ -251,7 +214,7 @@ export default function AuthModal({ onClose }: Props) {
               </div>
             )}
 
-            {/* NEW PASSWORD STEP (reset) */}
+            {/* NUEVA CONTRASEÑA */}
             {step === 'new-password' && (
               <div className="space-y-4">
                 <div className="text-center mb-2">
@@ -277,7 +240,7 @@ export default function AuthModal({ onClose }: Props) {
               </div>
             )}
 
-            {/* RESET FORM */}
+            {/* RECUPERAR CONTRASEÑA */}
             {step === 'form' && mode === 'reset' && (
               <div className="space-y-4">
                 <div className="text-center mb-2">
@@ -300,7 +263,7 @@ export default function AuthModal({ onClose }: Props) {
               </div>
             )}
 
-            {/* LOGIN / REGISTER FORM */}
+            {/* LOGIN / REGISTRO */}
             {step === 'form' && mode !== 'reset' && (
               <>
                 <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
@@ -354,53 +317,10 @@ export default function AuthModal({ onClose }: Props) {
               </>
             )}
           </div>
-          {step === 'form' && mode !== 'reset' && (
-            <div className="px-6 pb-5 text-center border-t border-gray-50 pt-4">
-              <button onClick={() => setShowCommunityForm(true)} className="text-xs text-gray-400 hover:text-emerald-600 transition-colors">
-                ¿Eres una institución? <span className="underline font-medium">Contáctanos aquí</span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
       {showTerms && <TermsModal />}
       {showPrivacy && <PrivacyModal />}
-      {showCommunityForm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h3 className="font-black text-gray-900">Solicitud de institución</h3>
-              <button onClick={() => { setShowCommunityForm(false); setCommunityReqSent(false) }} className="text-gray-400 hover:text-gray-600">✕</button>
-            </div>
-            <div className="p-5">
-              {communityReqSent ? (
-                <div className="text-center py-6">
-                  <div className="text-4xl mb-3">✅</div>
-                  <p className="font-bold text-gray-900 mb-2">¡Solicitud enviada!</p>
-                  <p className="text-sm text-gray-500">Revisaremos tu solicitud en 1-3 días hábiles y te contactaremos.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-500 mb-4">Llena el formulario y nos ponemos en contacto contigo.</p>
-                  <input type="text" placeholder="Tu nombre" value={communityReq.name}
-                    onChange={e => setCommunityReq(r => ({ ...r, name: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
-                  <input type="email" placeholder="Correo electrónico *" value={communityReq.email}
-                    onChange={e => setCommunityReq(r => ({ ...r, email: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
-                  <input type="text" placeholder="Nombre de la institución *" value={communityReq.institution}
-                    onChange={e => setCommunityReq(r => ({ ...r, institution: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
-                  <button onClick={sendCommunityRequest} disabled={communityReqLoading || !communityReq.email || !communityReq.institution}
-                    className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl text-sm mt-2">
-                    {communityReqLoading ? 'Enviando...' : 'Enviar solicitud'}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
