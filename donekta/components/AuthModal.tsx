@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { X, Heart, Users } from 'lucide-react'
+import { X, Heart } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 interface Props { onClose: () => void }
@@ -90,17 +90,12 @@ export default function AuthModal({ onClose }: Props) {
   const register = async () => {
     setError('')
     if (!email || !password) { setError('Llena todos los campos.'); return }
-    if (!userType) { setError('Elige si eres donador o comunidad.'); return }
     if (!acceptedTerms) { setError('Debes aceptar los Términos y Condiciones.'); return }
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name, user_type: userType } } })
+      const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name, user_type: 'donor' } } })
       if (error) throw error
-      if (userType === 'community') {
-        await supabase.from('communities').insert([{ name: name || email.split('@')[0], contact_email: email, status: 'pending', category: 'Otro', goal_amount: 0, raised_amount: 0 }])
-        await fetch('/api/send-community-request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).catch(() => {})
-        onClose(); router.push('/community-pending')
-      } else { onClose(); router.push('/donor') }
+      onClose(); router.push('/donor')
     } catch (e: any) { setError(e.message || 'Ocurrió un error') }
     finally { setLoading(false) }
   }
@@ -290,31 +285,11 @@ export default function AuthModal({ onClose }: Props) {
                 </div>
                 <div className="space-y-4">
                   {mode === 'register' && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Nombre completo</label>
-                        <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Tu nombre"
-                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">¿Cómo deseas unirte?</label>
-                        <div className="grid grid-cols-2 gap-3">
-                          <button onClick={() => setUserType('donor')} className={`rounded-xl border-2 p-4 text-left transition-all ${userType === 'donor' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                            <Heart className={`w-5 h-5 mb-2 ${userType === 'donor' ? 'text-emerald-500' : 'text-gray-400'}`} />
-                            <p className="font-semibold text-gray-900 text-sm">Donador</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Quiero apoyar comunidades</p>
-                          </button>
-                          <button onClick={() => setUserType('community')} className={`rounded-xl border-2 p-4 text-left transition-all ${userType === 'community' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                            <Users className={`w-5 h-5 mb-2 ${userType === 'community' ? 'text-emerald-500' : 'text-gray-400'}`} />
-                            <p className="font-semibold text-gray-900 text-sm">Comunidad</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Represento una comunidad</p>
-                          </button>
-                        </div>
-                        {userType === 'community' && (
-                          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">📧 Tu solicitud será revisada en 1-3 días hábiles.</div>
-                        )}
-                      </div>
-                    </>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Nombre completo</label>
+                      <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Tu nombre"
+                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                    </div>
                   )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Correo electrónico</label>
@@ -333,8 +308,11 @@ export default function AuthModal({ onClose }: Props) {
                     </button>
                   )}
                   {mode === 'register' && (
-                    <label className="flex items-start gap-2 cursor-pointer">
-                      <input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} className="w-4 h-4 mt-0.5 accent-emerald-500 flex-shrink-0" />
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border-2 border-gray-100 hover:border-emerald-200 transition-all">
+                      <div className={`w-5 h-5 mt-0.5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-all ${acceptedTerms ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'}`}
+                        onClick={() => setAcceptedTerms(!acceptedTerms)}>
+                        {acceptedTerms && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                      </div>
                       <span className="text-xs text-gray-600">
                         Acepto los{' '}
                         <button type="button" onClick={() => setShowTerms(true)} className="text-emerald-600 underline font-medium">Términos y Condiciones</button>
