@@ -115,7 +115,7 @@ export default function Home() {
           </div>
           <div>
             <p style={{ fontSize: 36, fontWeight: 900, color: '#55B584', marginBottom: 4 }}>{stats.communities > 0 ? `${stats.communities}+` : '...'}</p>
-            <p style={{ fontSize: 14, color: '#9CA3AF' }}>Comunidades verificadas</p>
+            <p style={{ fontSize: 14, color: '#9CA3AF' }}>Instituciones para donar</p>
           </div>
           <div>
             <p style={{ fontSize: 36, fontWeight: 900, color: '#55B584', marginBottom: 4 }}>{stats.raised > 0 ? `$${formatStats(stats.raised)}` : '...'}</p>
