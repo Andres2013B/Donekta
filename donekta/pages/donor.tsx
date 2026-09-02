@@ -52,9 +52,19 @@ export default function Donor() {
     setProjects(data || [])
   }
 
-  const filtered = communities.filter(c =>
-    !search || (c.name + c.category + c.city).toLowerCase().includes(search.toLowerCase())
-  )
+  const [selectedCategory, setSelectedCategory] = useState('')
+
+  const filtered = communities
+    .sort((a, b) => {
+      if (a.name === 'Colegio Olamí ORT') return -1
+      if (b.name === 'Colegio Olamí ORT') return 1
+      return 0
+    })
+    .filter(c => {
+      const matchSearch = !search || (c.name + c.category + c.city).toLowerCase().includes(search.toLowerCase())
+      const matchCategory = !selectedCategory || c.category === selectedCategory
+      return matchSearch && matchCategory
+    })
 
   const catColor: Record<string, { bg: string; text: string; banner: string }> = {
     'Alimentación':    { bg: '#d1fae5', text: '#065f46', banner: '#d1fae5' },
@@ -334,13 +344,21 @@ export default function Donor() {
           </div>
         </div>
         <div className="max-w-5xl mx-auto px-6 py-10">
-          <h1 className="text-3xl font-black text-gray-900 mb-2">Comunidades</h1>
-          <p className="text-gray-500 mb-8">Elige la comunidad que quieres apoyar hoy</p>
-          <div className="relative mb-8">
+          <h1 className="text-3xl font-black text-gray-900 mb-2">Instituciones para donar</h1>
+          <p className="text-gray-500 mb-6">Elige la institución que quieres apoyar hoy</p>
+          <div className="relative mb-4">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Buscar por nombre, categoría o ciudad..."
+            <input type="text" placeholder="Buscar por nombre o ciudad..."
               value={search} onChange={e => setSearch(e.target.value)}
               className="w-full border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-emerald-400 bg-white" />
+          </div>
+          <div className="flex gap-2 flex-wrap mb-8">
+            {['', 'Educación', 'Institución comunitaria', 'Institución deportiva', 'Ayuda comunitaria', 'Medios', 'Salud'].map(cat => (
+              <button key={cat} onClick={() => setSelectedCategory(cat)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${selectedCategory === cat ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300'}`}>
+                {cat === '' ? 'Todas' : cat}
+              </button>
+            ))}
           </div>
           {loading ? (
             <div className="text-center py-20">
@@ -359,8 +377,8 @@ export default function Donor() {
                   <button key={c.id} onClick={() => handleSelectCommunity(c)}
                     className="bg-white rounded-2xl border border-gray-100 overflow-hidden text-left hover:shadow-md hover:border-emerald-200 transition-all duration-200 group">
                     {c.image_url
-                      ? <img src={c.image_url} alt={c.name} className="w-full max-h-48 object-contain" />
-                      : <div style={{ backgroundColor: col.banner }} className="h-24" />
+                      ? <div className="w-full h-40 flex items-center justify-center p-4 bg-white"><img src={c.image_url} alt={c.name} className="max-h-full max-w-full object-contain" /></div>
+                      : <div style={{ backgroundColor: col.banner }} className="h-40" />
                     }
                     <div className="p-5">
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: col.bg, color: col.text }}>{c.category}</span>
