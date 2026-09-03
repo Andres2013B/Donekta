@@ -85,6 +85,17 @@ export default function Donor() {
     await supabase.from('communities').update({
       raised_amount: (selected.raised_amount || 0) + amount
     }).eq('id', selected.id)
+
+    // Si donó a un proyecto específico, actualizar su raised_amount
+    if (selectedProject) {
+      await supabase.from('projects').update({
+        raised_amount: (selectedProject.raised_amount || 0) + amount
+      }).eq('id', selectedProject.id)
+      setProjects(ps => ps.map(p => p.id === selectedProject.id
+        ? { ...p, raised_amount: (p.raised_amount || 0) + amount }
+        : p))
+    }
+
     const { data: donData } = await supabase.from('donations').insert([{
       community_id: selected.id,
       donor_name: dedicateTo ? `${donorName} (en nombre de ${dedicateTo})` : donorName,
