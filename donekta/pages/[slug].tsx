@@ -324,6 +324,22 @@ export default function InstitucionPage() {
           <p style={{ textAlign: 'center', fontSize: 12, color: '#9CA3AF', marginTop: 20, lineHeight: 1.6 }}>
             Pago seguro procesado por Stripe · Recibirás tu certificado por correo
           </p>
+
+          {/* BOTÓN A DONEKTA */}
+          <div style={{ marginTop: 32, padding: 24, background: '#EDFBF4', borderRadius: 16, textAlign: 'center' }}>
+            <p style={{ fontSize: 14, color: '#374151', fontWeight: 600, marginBottom: 6 }}>
+              ¿Quieres apoyar a otras instituciones?
+            </p>
+            <p style={{ fontSize: 13, color: '#6F737D', marginBottom: 16, lineHeight: 1.5 }}>
+              Explora todas las comunidades verificadas en Donekta.
+            </p>
+            <a href="/donor" style={{
+              display: 'inline-block', background: '#55B584', color: '#fff', fontWeight: 700,
+              fontSize: 14, padding: '12px 28px', borderRadius: 100, textDecoration: 'none',
+            }}>
+              Ver todas las instituciones →
+            </a>
+          </div>
         </div>
       </div>
     </>
