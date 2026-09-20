@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
-import { Heart, Search, MapPin, Users, ArrowLeft } from 'lucide-react'
+import { Heart, Search, MapPin, Users, ArrowLeft, Link as LinkIcon } from 'lucide-react'
 import { supabase, Community } from '../lib/supabase'
 import DonationCheckout from '../components/DonationCheckout'
 import DonorIdentificationForm from '../components/DonorIdentificationForm'
+
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+}
+
 
 export default function Donor() {
   const [communities, setCommunities] = useState<Community[]>([])
@@ -398,7 +408,11 @@ export default function Donor() {
                         {c.city && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{c.city}</span>}
                         {c.beneficiaries && <span className="flex items-center gap-1"><Users className="w-3 h-3" />{c.beneficiaries}</span>}
                       </div>
-                      {c.description && <p className="text-xs text-gray-500 line-clamp-2">{c.description}</p>}
+                      {c.description && <p className="text-xs text-gray-500 line-clamp-2 mb-3">{c.description}</p>}
+                      <div className="flex items-center gap-1.5 pt-2 border-t border-gray-50">
+                        <LinkIcon className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                        <span className="text-[10px] text-gray-400 font-mono truncate">/{slugify(c.name)}</span>
+                      </div>
                     </div>
                   </button>
                 )
