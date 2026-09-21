@@ -127,6 +127,10 @@ export default function InstitucionPage() {
     </div>
   )
 
+  const brand = community.brand_color || '#55B584'
+  const brandLight = brand + '14'
+  const brandShadow = brand + '4D'
+
   if (donated) return (
     <>
       <Head><title>¡Gracias! — {community.name}</title></Head>
@@ -135,13 +139,13 @@ export default function InstitucionPage() {
           <div style={{ fontSize: 56, marginBottom: 16 }}>💚</div>
           <h1 style={{ fontSize: 26, fontWeight: 900, color: '#121826', marginBottom: 12 }}>¡Gracias por donar!</h1>
           <p style={{ color: '#6F737D', fontSize: 15, lineHeight: 1.6, marginBottom: 24 }}>
-            Tu donación de <strong style={{ color: '#55B584' }}>${finalAmount.toLocaleString('es-MX')} MXN</strong>
+            Tu donación de <strong style={{ color: brand }}>${finalAmount.toLocaleString('es-MX')} MXN</strong>
             {selectedProject && <> a <strong>{selectedProject.name}</strong></>} fue procesada correctamente.
           </p>
           <p style={{ color: '#9CA3AF', fontSize: 13, marginBottom: 28 }}>
             Te enviamos tu certificado de donación a <strong>{donorEmail}</strong>
           </p>
-          <button onClick={reset} style={{ background: '#55B584', color: '#fff', fontWeight: 700, fontSize: 15, padding: '14px 32px', borderRadius: 100, border: 'none', cursor: 'pointer' }}>
+          <button onClick={reset} style={{ background: brand, color: '#fff', fontWeight: 700, fontSize: 15, padding: '14px 32px', borderRadius: 100, border: 'none', cursor: 'pointer' }}>
             Hacer otra donación
           </button>
         </div>
@@ -187,7 +191,7 @@ export default function InstitucionPage() {
           </div>
         </div>
 
-        <div style={{ background: '#EDFBF4', padding: '48px 24px', textAlign: 'center' }}>
+        <div style={{ background: brandLight, padding: '48px 24px', textAlign: 'center' }}>
           <h1 style={{ fontSize: 32, fontWeight: 900, color: '#121826', marginBottom: 12, lineHeight: 1.2 }}>
             Apoya a {community.name}
           </h1>
@@ -205,8 +209,8 @@ export default function InstitucionPage() {
                 <button onClick={() => setSelectedProject(null)}
                   style={{
                     width: '100%', textAlign: 'left', padding: 20, borderRadius: 16, cursor: 'pointer',
-                    border: !selectedProject ? '2px solid #55B584' : '2px solid #E5E7EB',
-                    background: !selectedProject ? '#EDFBF4' : '#fff',
+                    border: !selectedProject ? '2px solid ' + brand : '2px solid #E5E7EB',
+                    background: !selectedProject ? brandLight : '#fff',
                   }}>
                   <p style={{ fontWeight: 700, color: '#121826', fontSize: 15, marginBottom: 4 }}>Donación general</p>
                   <p style={{ fontSize: 13, color: '#6F737D' }}>La institución decide dónde se necesita más.</p>
@@ -219,19 +223,19 @@ export default function InstitucionPage() {
                     <button key={p.id} onClick={() => setSelectedProject(p)}
                       style={{
                         width: '100%', textAlign: 'left', padding: 20, borderRadius: 16, cursor: 'pointer',
-                        border: active ? '2px solid #55B584' : '2px solid #E5E7EB',
-                        background: active ? '#EDFBF4' : '#fff',
+                        border: active ? '2px solid ' + brand : '2px solid #E5E7EB',
+                        background: active ? brandLight : '#fff',
                       }}>
                       <p style={{ fontWeight: 700, color: '#121826', fontSize: 15, marginBottom: 4 }}>{p.name}</p>
                       {p.description && <p style={{ fontSize: 13, color: '#6F737D', marginBottom: 12, lineHeight: 1.5 }}>{p.description}</p>}
                       {p.goal_amount > 0 && (
                         <>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#9CA3AF', marginBottom: 6 }}>
-                            <span><strong style={{ color: '#55B584' }}>${(p.raised_amount || 0).toLocaleString('es-MX')}</strong> recaudados</span>
+                            <span><strong style={{ color: brand }}>${(p.raised_amount || 0).toLocaleString('es-MX')}</strong> recaudados</span>
                             <span>Meta: ${p.goal_amount.toLocaleString('es-MX')}</span>
                           </div>
                           <div style={{ width: '100%', background: '#E5E7EB', borderRadius: 100, height: 6 }}>
-                            <div style={{ width: pct + '%', background: '#55B584', height: 6, borderRadius: 100, transition: 'width 0.4s' }} />
+                            <div style={{ width: pct + '%', background: brand, height: 6, borderRadius: 100, transition: 'width 0.4s' }} />
                           </div>
                         </>
                       )}
@@ -249,9 +253,9 @@ export default function InstitucionPage() {
                 <button key={m} onClick={() => { setAmount(m); setCustomAmount('') }}
                   style={{
                     padding: '14px 0', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
-                    border: (!customAmount && amount === m) ? '2px solid #55B584' : '2px solid #E5E7EB',
-                    background: (!customAmount && amount === m) ? '#EDFBF4' : '#fff',
-                    color: (!customAmount && amount === m) ? '#0B3D2E' : '#6F737D',
+                    border: (!customAmount && amount === m) ? '2px solid ' + brand : '2px solid #E5E7EB',
+                    background: (!customAmount && amount === m) ? brandLight : '#fff',
+                    color: (!customAmount && amount === m) ? brand : '#6F737D',
                   }}>
                   ${m.toLocaleString('es-MX')}
                 </button>
@@ -278,7 +282,7 @@ export default function InstitucionPage() {
                 <div style={{
                   width: 20, height: 20, borderRadius: 5, flexShrink: 0,
                   border: anonymous ? 'none' : '2px solid #D1D5DB',
-                  background: anonymous ? '#55B584' : '#fff',
+                  background: anonymous ? brand : '#fff',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {anonymous && <span style={{ color: '#fff', fontSize: 13, fontWeight: 900 }}>✓</span>}
@@ -296,9 +300,9 @@ export default function InstitucionPage() {
 
           <button onClick={handleDonate}
             style={{
-              width: '100%', background: '#55B584', color: '#fff', fontWeight: 800, fontSize: 17,
+              width: '100%', background: brand, color: '#fff', fontWeight: 800, fontSize: 17,
               padding: '18px 0', borderRadius: 100, border: 'none', cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(85,181,132,0.3)',
+              boxShadow: '0 4px 16px ' + brandShadow,
             }}>
             Donar ${finalAmount.toLocaleString('es-MX')} MXN
           </button>
@@ -308,7 +312,7 @@ export default function InstitucionPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#6F737D' }}>💚 {community.name} (94.4%)</span>
-                <strong style={{ color: '#55B584' }}>${(finalAmount * 0.944).toLocaleString('es-MX', { maximumFractionDigits: 2 })}</strong>
+                <strong style={{ color: brand }}>${(finalAmount * 0.944).toLocaleString('es-MX', { maximumFractionDigits: 2 })}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#9CA3AF' }}>💳 Stripe (3.6%)</span>
@@ -326,7 +330,7 @@ export default function InstitucionPage() {
           </p>
 
           {/* BOTÓN A DONEKTA */}
-          <div style={{ marginTop: 32, padding: 24, background: '#EDFBF4', borderRadius: 16, textAlign: 'center' }}>
+          <div style={{ marginTop: 32, padding: 24, background: brandLight, borderRadius: 16, textAlign: 'center' }}>
             <p style={{ fontSize: 14, color: '#374151', fontWeight: 600, marginBottom: 6 }}>
               ¿Quieres apoyar a otras instituciones?
             </p>
@@ -334,7 +338,7 @@ export default function InstitucionPage() {
               Explora todas las comunidades verificadas en Donekta.
             </p>
             <a href="/donor" style={{
-              display: 'inline-block', background: '#55B584', color: '#fff', fontWeight: 700,
+              display: 'inline-block', background: brand, color: '#fff', fontWeight: 700,
               fontSize: 14, padding: '12px 28px', borderRadius: 100, textDecoration: 'none',
             }}>
               Ver todas las instituciones →
